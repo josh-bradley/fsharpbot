@@ -1,0 +1,54 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.5/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.5",
+  "version": "1.0.0",
+  "id": "d03577b0-075f-4590-9cac-23c0daa8e362",
+  "packageName": "com.teams.spotifybot",
+  "developer": {
+    "name": "spotifyBot",
+    "websiteUrl": "https://www.microsoft.com",
+    "privacyUrl": "https://www.teams.com/privacy",
+    "termsOfUseUrl": "https://www.teams.com/termsofuser"
+  },
+  "icons": {
+    "outline": "icon-outline.png",
+    "color": "icon-color.png"
+  },
+  "name": {
+    "short": "TeamsConversationBot",
+    "full": "TeamsConversationBot"
+  },
+  "description": {
+    "short": "TeamsConversationBot",
+    "full": "TeamsConversationBot"
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [
+    { 
+      "botId": "d03577b0-075f-4590-9cac-23c0daa8e362",
+      "scopes": [
+        "personal",
+        "groupchat",
+        "team"
+      ],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": [
+            "personal", 
+            "groupchat",
+            "team"
+          ],
+          "commands": [
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": []
+}
