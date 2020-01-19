@@ -1,6 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>30c24a8b-e12a-40f5-a77c-76b51a77cdb6</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Controllers\BotController.fs" />
