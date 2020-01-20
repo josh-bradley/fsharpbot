@@ -21,10 +21,11 @@ type TeamsSpotifyBot =
         message.TextFormat <- TextFormatTypes.Markdown
         async { return turnContext.SendActivityAsync(message, cancellationToken) } |> Async.StartAsTask :> Task
 
-    member this.GetAppleIdentifiers (appleUrl: string) : Option<string> =
+    member this.GetAppleIdentifiers (appleUrl: string) : Option<string * string> =
         let results = HtmlDocument.Load(appleUrl)
 
         let isSpan (x: HtmlNode) = x.Name() = "span"
+        let isAnchor (x: HtmlNode) = x.Name() = "a"
 
         results.Descendants["h1"]
             |> Seq.toList
@@ -35,12 +36,18 @@ type TeamsSpotifyBot =
                     |> HtmlNode.descendants false isSpan
                     |> Seq.toList
                     |> function
-                        | [] -> None
-                        | head::_ ->
-                            head |> HtmlNode.innerText |> Some
+                        | [mainTitleSpan; subTitleSpan;] ->
+                            let mainTitle = mainTitleSpan |> HtmlNode.innerText
+                            let subTitle = HtmlNode.descendants false isAnchor subTitleSpan
+                                            |> Seq.toList
+                                            |> function
+                                                | [] -> ""
+                                                | head::_ -> head |> HtmlNode.innerText
+                            Some (mainTitle, subTitle)
+                        | _ -> None
 
-    member this.GetSpotifyUrl (name: string) =
-        let googleSearch = sprintf "http://www.google.com/search?q=site:spotify.com+%s" name
+    member this.GetSpotifyUrl (title: string) (subTitle: string) =
+        let googleSearch = sprintf "http://www.google.com/search?q=site:spotify.com+%s+%s" title subTitle
         let results = HtmlDocument.Load(googleSearch)
 
         let getAnchorNameAndUrl (x: HtmlNode) = x.TryGetAttribute("href")
@@ -67,6 +74,6 @@ type TeamsSpotifyBot =
                 | true -> this.GetAppleIdentifiers (appleUrl)
                             |> function
                                 | None -> failedMessage
-                                | Some x ->
-                                    let url = this.GetSpotifyUrl x
+                                | Some (title, subTitle) ->
+                                    let url = this.GetSpotifyUrl title subTitle
                                     sprintf "FTFY\n[%s](%s)" url url
