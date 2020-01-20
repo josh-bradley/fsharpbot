@@ -3,29 +3,19 @@
 open Microsoft.Bot.Builder.Teams
 open Microsoft.Bot.Builder
 open Microsoft.Bot.Schema
-open Microsoft.Extensions.Configuration
 open System.Threading
 open System.Threading.Tasks
 open FSharp.Data
 
 type TeamsSpotifyBot =
    inherit TeamsActivityHandler
-   new(config: IConfiguration) = {}
+   new () = {}
 
    override this.OnMessageActivityAsync(turnContext: ITurnContext<IMessageActivity> , cancellationToken: CancellationToken) =
         turnContext.Activity.RemoveRecipientMention() |> ignore
 
-        let failedMessage = "Could not find it"
-        let appleUrl = turnContext.Activity.Text.Trim()
-        let messageText = appleUrl.StartsWith("https://music.apple.com")
-                            |> function
-                                | false -> failedMessage
-                                | true -> this.GetAppleIdentifiers (turnContext.Activity.Text.Trim())
-                                            |> function
-                                                | Some x ->
-                                                    let url = this.GetSpotifyUrl x
-                                                    sprintf "FTFY\n[%s](%s)" url url
-                                                | None -> "Could not find it"
+        let messageText = turnContext.Activity.Text.Trim()
+                            |> this.BuildMessageText
 
         let message = MessageFactory.Text(messageText)
         message.TextFormat <- TextFormatTypes.Markdown
@@ -39,18 +29,44 @@ type TeamsSpotifyBot =
         results.Descendants["h1"]
             |> Seq.toList
             |> function
-                | head::_ -> head |> HtmlNode.descendants false isSpan |> Seq.head |> HtmlNode.innerText |> Some
                 | [] -> None
+                | head::_ ->
+                    head
+                    |> HtmlNode.descendants false isSpan
+                    |> Seq.toList
+                    |> function
+                        | [] -> None
+                        | head::_ ->
+                            head |> HtmlNode.innerText |> Some
 
     member this.GetSpotifyUrl (name: string) =
         let googleSearch = sprintf "http://www.google.com/search?q=site:spotify.com+%s" name
         let results = HtmlDocument.Load(googleSearch)
 
+        let getAnchorNameAndUrl (x: HtmlNode) = x.TryGetAttribute("href")
+                                                |> Option.map (fun a -> x.InnerText(), a.Value())
+        let isSearchResultLink (name: string, url: string) =
+                name <> "Cached" && name <> "Similar" && url.StartsWith("/url?")
+        let extractResultUrl (url: string) = url.Substring(0, url.IndexOf("&sa=")).Replace("/url?q=", "")
+        let isValidSpotifyUrl (url: string) = url.StartsWith("https://open.spotify.com")
+
+
         results.Descendants["a"]
-            |> Seq.choose (fun x -> x.TryGetAttribute("href")
-                                    |> Option.map (fun a -> x.InnerText(), a.Value()))
-            |> Seq.filter (fun (name, url) ->
-                name <> "Cached" && name <> "Similar" && url.StartsWith("/url?"))
-            |> Seq.map (fun (_, url) -> url.Substring(0, url.IndexOf("&sa=")).Replace("/url?q=", ""))
-            |> Seq.filter (fun url -> url.StartsWith("https://open.spotify.com"))
+            |> Seq.choose getAnchorNameAndUrl
+            |> Seq.filter isSearchResultLink
+            |> Seq.map snd
+            |> Seq.map extractResultUrl
+            |> Seq.filter isValidSpotifyUrl
             |> Seq.head
+
+    member this.BuildMessageText (appleUrl: string) =
+            let failedMessage = "Could not find it"
+            appleUrl.StartsWith("https://music.apple.com")
+            |> function
+                | false -> failedMessage
+                | true -> this.GetAppleIdentifiers (appleUrl)
+                            |> function
+                                | None -> failedMessage
+                                | Some x ->
+                                    let url = this.GetSpotifyUrl x
+                                    sprintf "FTFY\n[%s](%s)" url url
