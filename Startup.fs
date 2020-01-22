@@ -31,8 +31,6 @@ type Startup private () =
         app.UseHttpsRedirection() |> ignore
         app.UseRouting() |> ignore
 
-        app.UseAuthorization() |> ignore
-
         app.UseEndpoints(fun endpoints ->
             endpoints.MapControllers() |> ignore
             ) |> ignore
