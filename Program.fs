@@ -13,7 +13,10 @@ open Microsoft.Extensions.Hosting
 module Program =
     let exitCode = 0
 
-    let appConfiguration (_:HostBuilderContext) (config:IConfigurationBuilder) = config.AddEnvironmentVariables() |> ignore
+    let appConfiguration (_:HostBuilderContext) (config:IConfigurationBuilder) = 
+        config
+            .AddJsonFile("app.settings", false, true)
+            .AddEnvironmentVariables() |> ignore
 
     let config = new Action<HostBuilderContext, IConfigurationBuilder> (appConfiguration)
 
