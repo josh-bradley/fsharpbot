@@ -13,19 +13,9 @@ open Microsoft.Extensions.Hosting
 module Program =
     let exitCode = 0
 
-    let appConfiguration (_:HostBuilderContext) (config:IConfigurationBuilder) = 
-        config
-            .AddJsonFile("app.settings", false, true)
-            .AddEnvironmentVariables() |> ignore
-
-    let config = new Action<HostBuilderContext, IConfigurationBuilder> (appConfiguration)
-
     let CreateHostBuilder args =
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(fun webBuilder ->
-                webBuilder.UseStartup<Startup>() |> ignore
-            )
-            .ConfigureAppConfiguration(config)
+        WebHost.CreateDefaultBuilder(args)
+            .UseStartup<Startup>()
 
     [<EntryPoint>]
     let main args =
