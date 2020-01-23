@@ -32,4 +32,4 @@ type TeamsSpotifyBot =
                             | None -> failedMessage
                             | Some (title, subTitle) ->
                                 let url = getSpotifyUrl title subTitle
-                                sprintf "FTFY\n[%s](%s)" url url
+                                sprintf "FTFY: [%s](%s)" url url

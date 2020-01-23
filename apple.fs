@@ -3,12 +3,18 @@
 open FSharp.Data
 
 let isElement (elementName: string) (x: HtmlNode) = x.Name() = elementName
+let isAnchor = isElement "a"
+
+let getSubTitle subTitleSpan =
+    HtmlNode.descendants false isAnchor subTitleSpan
+    |> Seq.toList
+    |> function
+        | [] -> ""
+        | head::_ -> head |> HtmlNode.innerText
 
 let getAppleIdentifiers (appleUrl: string) : Option<string * string> =
     let results = HtmlDocument.Load(appleUrl)
-
     let isSpan = isElement "span"
-    let isAnchor = isElement "a"
 
     results.Descendants["h1"]
         |> Seq.toList
@@ -21,10 +27,6 @@ let getAppleIdentifiers (appleUrl: string) : Option<string * string> =
                 |> function
                     | [mainTitleSpan; subTitleSpan;] ->
                         let mainTitle = mainTitleSpan |> HtmlNode.innerText
-                        let subTitle = HtmlNode.descendants false isAnchor subTitleSpan
-                                        |> Seq.toList
-                                        |> function
-                                            | [] -> ""
-                                            | head::_ -> head |> HtmlNode.innerText
+                        let subTitle = getSubTitle subTitleSpan
                         Some (mainTitle, subTitle)
                     | _ -> None
