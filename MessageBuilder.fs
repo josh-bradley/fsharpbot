@@ -5,7 +5,7 @@ open Spotify
 
 
 let buildMessageText (message: string) =
-    let failedMessage = "Could not find what you are looking for"
+    let failedMessage = ""
     let r = message.Split ' '
 
     message.Split ' '

@@ -23,13 +23,16 @@ type TeamsSpotifyBot() =
         let connector = new Microsoft.Bot.Connector.ConnectorClient(baseUri, this.Configuration.["MicrosoftAppId"], this.Configuration.["MicrosoftAppPassword"])
         let conversations = new Conversations(connector)
 
-        let messageText = turnContext.Activity.Text.Trim()
+        let rawText = turnContext.Activity.Text
+        let messageText = rawText.Trim()
                             |> buildMessageText
 
-        let message = MessageFactory.Text(messageText)
-        message.TextFormat <- TextFormatTypes.Markdown
-        let destinationConversationId = this.Configuration.["TeamsDestinationConversationId"]
-        
-        async { return conversations.SendToConversationWithHttpMessagesAsync(destinationConversationId, message) } |> Async.StartAsTask :> Task
+        match messageText with
+        | "" -> async { return turnContext.SendActivityAsync(MessageFactory.Text("Unable to find for " + rawText), cancellationToken) } |> Async.StartAsTask :> Task
+        | _ ->
+            let message = MessageFactory.Text(messageText)
+            message.TextFormat <- TextFormatTypes.Markdown
+            let destinationConversationId = this.Configuration.["TeamsDestinationConversationId"]
+            async { return conversations.SendToConversationWithHttpMessagesAsync(destinationConversationId, message) } |> Async.StartAsTask :> Task
 
     member val Configuration : IConfiguration = null with get, set
