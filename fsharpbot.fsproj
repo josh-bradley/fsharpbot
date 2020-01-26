@@ -9,6 +9,7 @@
     <Compile Include="AdapterWithErrorHandler.fs" />
     <Compile Include="Apple.fs" />
     <Compile Include="Spotify.fs" />
+    <Compile Include="AdditionalMessages.fs" />
     <Compile Include="MessageBuilder.fs" />
     <Compile Include="TeamsSpotifyBot.fs" />
     <Compile Include="Startup.fs" />

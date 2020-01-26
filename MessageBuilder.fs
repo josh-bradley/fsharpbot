@@ -1,8 +1,13 @@
 ﻿module MessageBuilder
 
+open AdditionalMessages
 open Apple
 open Spotify
 
+let getAdditionalMessage() =
+    let ran = new System.Random()
+    let num = ran.Next(0, additionalMessages.Length - 1)
+    additionalMessages.[num]
 
 let buildMessageText (message: string) =
     let failedMessage = ""
@@ -11,7 +16,7 @@ let buildMessageText (message: string) =
     message.Split ' '
     |> function
         | [|command; appleUrl|] -> 
-            let additional = if(command.Trim() = "Surprise") then "![Surprise](https://i.imgur.com/gDQk9GQ.gif)" else "FTFY"
+            let additional = if(command.Trim() = "Surprise") then "![Surprise](https://i.imgur.com/gDQk9GQ.gif)" else getAdditionalMessage()
             appleUrl.Trim().StartsWith("https://music.apple.com")
             |> function
                 | false -> failedMessage
