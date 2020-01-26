@@ -15,5 +15,6 @@ let additionalMessages = [|
     "![Bored](https://i.imgur.com/yHC48ao.gif)";
     "You will tire of this before I do human";
     "That is a good one"
+    "![Apple geniuses](https://media.giphy.com/media/3o6ZtnFOV6eGWqktu8/giphy.gif)"
     |]
 
