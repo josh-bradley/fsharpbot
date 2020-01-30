@@ -16,7 +16,7 @@ let buildMessageText (message: string) =
     message.Split ' '
     |> function
         | [|command; appleUrl|] -> 
-            let additional = if(command.Trim() = "Surprise") then "![Surprise](https://i.imgur.com/gDQk9GQ.gif)" else getAdditionalMessage()
+            let additional = if(command.Trim() = "Surprise") then "Kind Regards" else getAdditionalMessage()
             appleUrl.Trim().StartsWith("https://music.apple.com")
             |> function
                 | false -> failedMessage
