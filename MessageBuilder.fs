@@ -3,6 +3,8 @@
 open AdditionalMessages
 open Apple
 open Spotify
+open Microsoft.Bot.Builder
+open Microsoft.Bot.Schema
 
 let getAdditionalMessage() =
     let ran = new System.Random()
@@ -11,7 +13,6 @@ let getAdditionalMessage() =
 
 let buildMessageText (message: string) =
     let failedMessage = ""
-    let r = message.Split ' '
 
     message.Split ' '
     |> function
@@ -28,3 +29,9 @@ let buildMessageText (message: string) =
                             let url = getSpotifyUrl title subTitle
                             sprintf "[%s](%s) \n\n %s" url url additional
         | _ -> failedMessage
+
+let buildImageMessage imageString =
+    let messageText = sprintf "![Image](%s)" imageString
+    let message = MessageFactory.Text(messageText)
+    message.TextFormat <- TextFormatTypes.Markdown
+    message

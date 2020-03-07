@@ -11,6 +11,7 @@
     <Compile Include="Spotify.fs" />
     <Compile Include="AdditionalMessages.fs" />
     <Compile Include="MessageBuilder.fs" />
+    <Compile Include="KickVote.fs" />
     <Compile Include="TeamsSpotifyBot.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />

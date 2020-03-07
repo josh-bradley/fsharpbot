@@ -3,12 +3,13 @@
 open Microsoft.Bot.Builder.Teams
 open Microsoft.Bot.Builder
 open Microsoft.Bot.Schema
+open MessageBuilder
+open KickVote
+open Microsoft.Bot.Connector
+open Microsoft.Extensions.Configuration
+open System
 open System.Threading
 open System.Threading.Tasks
-open MessageBuilder
-open Microsoft.Bot.Connector
-open System
-open Microsoft.Extensions.Configuration
 
 type TeamsSpotifyBot() =
     inherit TeamsActivityHandler()
@@ -16,7 +17,8 @@ type TeamsSpotifyBot() =
         TeamsSpotifyBot() then
             this.Configuration <- configuration
 
-    override this.OnMessageActivityAsync(turnContext: ITurnContext<IMessageActivity> , cancellationToken: CancellationToken) =
+    override this.OnMessageActivityAsync(turnContext: ITurnContext<IMessageActivity>, cancellationToken: CancellationToken) =
+        let mentions = turnContext.Activity.GetMentions()
         turnContext.Activity.RemoveRecipientMention() |> ignore
 
         let baseUri = new Uri(turnContext.Activity.ServiceUrl);
@@ -24,15 +26,39 @@ type TeamsSpotifyBot() =
         let conversations = new Conversations(connector)
 
         let rawText = turnContext.Activity.Text
-        let messageText = rawText.Trim()
-                            |> buildMessageText
 
-        match messageText with
-        | "" -> async { return turnContext.SendActivityAsync(MessageFactory.Text("Unable to find for " + rawText), cancellationToken) } |> Async.StartAsTask :> Task
+        let (|Prefix|_|) (p:string) (s:string) =
+            if s.StartsWith(p) then
+                Some(s.Substring(p.Length))
+            else
+                None
+        
+        let destinationConversationId = this.Configuration.["TeamsDestinationConversationId"]
+        match rawText with
+        | Prefix "kickvote" reason ->
+            let targets = mentions
+                            |> Array.filter (fun x -> x.Mentioned.Id <> turnContext.Activity.Recipient.Id)
+            let target = targets.[0]
+
+            match target.Mentioned.Name.Contains("aoehuaoeuoeu") with
+            | true -> 
+                let message = buildImageMessage "https://media.giphy.com/media/uIGfoVAK9iU1y/giphy.gif"
+                async { return turnContext.SendActivityAsync(message, cancellationToken) } |> Async.StartAsTask :> Task
+            | false ->
+                let activity = buildKickVoteActivity reason target
+                async { return turnContext.SendActivityAsync(activity) } |> Async.StartAsTask :> Task
+        | Prefix "Vote" vote ->
+            handleVote turnContext vote turnContext.Activity.Conversation.Id conversations cancellationToken
         | _ ->
-            let message = MessageFactory.Text(messageText)
-            message.TextFormat <- TextFormatTypes.Markdown
-            let destinationConversationId = this.Configuration.["TeamsDestinationConversationId"]
-            async { return conversations.SendToConversationWithHttpMessagesAsync(destinationConversationId, message) } |> Async.StartAsTask :> Task
+            let messageText = rawText.Trim()
+                                |> buildMessageText
+
+            match messageText with
+            | "" -> async { return turnContext.SendActivityAsync(MessageFactory.Text("Unable to find for " + rawText), cancellationToken) } |> Async.StartAsTask :> Task
+            | _ ->
+                let message = MessageFactory.Text(messageText)
+                message.TextFormat <- TextFormatTypes.Markdown
+                
+                async { return conversations.SendToConversationWithHttpMessagesAsync(destinationConversationId, message) } |> Async.StartAsTask :> Task
 
     member val Configuration : IConfiguration = null with get, set
