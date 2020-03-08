@@ -17,6 +17,12 @@ type TeamsSpotifyBot() =
         TeamsSpotifyBot() then
             this.Configuration <- configuration
 
+    override this.OnConversationUpdateActivityAsync(turnContext: ITurnContext<IConversationUpdateActivity>, cancellationToken:CancellationToken) =
+        match turnContext.Activity.TopicName with
+        | null -> Task.CompletedTask
+        | _ ->  let msg = sprintf "%s changed the group name to %s" turnContext.Activity.From.Name turnContext.Activity.TopicName
+                async { return turnContext.SendActivityAsync(MessageFactory.Text(msg), cancellationToken) } |> Async.StartAsTask :> Task
+
     override this.OnMessageActivityAsync(turnContext: ITurnContext<IMessageActivity>, cancellationToken: CancellationToken) =
         let mentions = turnContext.Activity.GetMentions()
         turnContext.Activity.RemoveRecipientMention() |> ignore
