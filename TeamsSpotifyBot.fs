@@ -45,7 +45,7 @@ type TeamsSpotifyBot() =
                             |> Array.filter (fun x -> x.Mentioned.Id <> turnContext.Activity.Recipient.Id)
             let target = targets.[0]
 
-            match target.Mentioned.Name.Contains("aoehuaoeuoeu") with
+            match target.Mentioned.Name.Contains("Josh") with
             | true -> 
                 let message = buildImageMessage "https://media.giphy.com/media/uIGfoVAK9iU1y/giphy.gif"
                 async { return turnContext.SendActivityAsync(message, cancellationToken) } |> Async.StartAsTask :> Task
